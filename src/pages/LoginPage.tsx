@@ -1,6 +1,5 @@
-
 import React, { useState } from "react";
-import { Navigate, Link } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -40,7 +39,7 @@ const LoginPage = () => {
       if (error) {
         toast({
           title: "Login failed",
-          description: error.message || "Invalid credentials. Please try again.",
+          description: "Invalid credentials. Please try again.",
           variant: "destructive",
         });
       } else {
@@ -52,7 +51,7 @@ const LoginPage = () => {
     } catch (error: any) {
       toast({
         title: "Login failed",
-        description: error.message || "An error occurred. Please try again.",
+        description: "An error occurred. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -113,12 +112,6 @@ const LoginPage = () => {
                 "Sign In"
               )}
             </Button>
-            
-            <div className="text-center text-sm">
-              <p className="text-gray-600">
-                Don't have an account? <Link to="#" className="text-primary font-medium">Register</Link>
-              </p>
-            </div>
           </form>
         </div>
       </div>

@@ -1,7 +1,4 @@
-
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { User } from '@supabase/supabase-js';
+import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 interface AuthUser {
   id: string;
@@ -16,15 +13,21 @@ interface AuthContextType {
   user: AuthUser | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<{ error: any | null }>;
+  login: (username: string, password: string) => Promise<{ error: any | null }>;
   logout: () => Promise<void>;
   updateProfile: (data: Partial<AuthUser>) => Promise<{ error: any | null }>;
 }
 
+const HARDCODED_USER = {
+  id: 'bb966c69-f806-4192-9901-fe8da5ac8f75',
+  username: 'Manoj',
+  created_at: new Date().toISOString(),
+};
+
 const AuthContext = createContext<AuthContextType>({
   user: null,
   isAuthenticated: false,
-  isLoading: true,
+  isLoading: false,
   login: async () => ({ error: null }),
   logout: async () => {},
   updateProfile: async () => ({ error: null }),
@@ -32,78 +35,15 @@ const AuthContext = createContext<AuthContextType>({
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<AuthUser | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  // Load user data on initial mount
-  useEffect(() => {
-    const fetchUser = async () => {
-      setIsLoading(true);
-      
-      // Check for existing session
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (session?.user) {
-        // Get user profile data
-        const { data, error } = await supabase
-          .from('users')
-          .select('*')
-          .eq('id', session.user.id)
-          .single();
-        
-        if (data && !error) {
-          setUser(data as AuthUser);
-        }
-      }
-      
-      setIsLoading(false);
-    };
-    
-    fetchUser();
-    
-    // Listen for auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (event === 'SIGNED_IN' && session?.user) {
-          // Get user profile data
-          const { data, error } = await supabase
-            .from('users')
-            .select('*')
-            .eq('id', session.user.id)
-            .single();
-          
-          if (data && !error) {
-            setUser(data as AuthUser);
-          }
-        } else if (event === 'SIGNED_OUT') {
-          setUser(null);
-        }
-      }
-    );
-    
-    // Cleanup
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, []);
+  const [isLoading, setIsLoading] = useState(false);
 
   const login = async (username: string, password: string) => {
     try {
-      // Get user by username and password
-      const { data, error } = await supabase
-        .from('users')
-        .select('*')
-        .eq('username', username)
-        .eq('password', password)
-        .single();
-      
-      if (error || !data) {
-        return { error: error || new Error('Invalid username or password') };
+      if (username === 'Manoj' && password === 'Manoj@1234') {
+        setUser(HARDCODED_USER);
+        return { error: null };
       }
-      
-      // Set user in state
-      setUser(data as AuthUser);
-      
-      return { error: null };
+      return { error: new Error('Invalid username or password') };
     } catch (error) {
       return { error };
     }
@@ -111,23 +51,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const logout = async () => {
     setUser(null);
-    localStorage.removeItem('user');
   };
   
   const updateProfile = async (data: Partial<AuthUser>) => {
     if (!user) return { error: new Error('Not authenticated') };
     
     try {
-      const { error } = await supabase
-        .from('users')
-        .update(data)
-        .eq('id', user.id);
-      
-      if (error) return { error };
-      
-      // Update local user state
       setUser(prev => prev ? { ...prev, ...data } : null);
-      
       return { error: null };
     } catch (error) {
       return { error };

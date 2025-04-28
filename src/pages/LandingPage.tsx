@@ -1,8 +1,6 @@
-
 import React from "react";
 import { Link, Navigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 
 const LandingPage = () => {
@@ -32,38 +30,32 @@ const LandingPage = () => {
                   Get Started
                 </Button>
               </Link>
-              <Link to="/login">
-                <Button variant="outline" size="lg" className="text-lg px-8 bg-white/10 backdrop-blur-sm">
-                  Learn More
-                </Button>
-              </Link>
             </div>
           </div>
         </div>
       </header>
 
       {/* Features Section */}
-      <section className="py-24 bg-accent/30">
+      <section className="py-20 bg-gray-50">
         <div className="container px-4 mx-auto">
-          <h2 className="mb-16 text-4xl font-bold text-center">Why Choose Our Expense Tracker?</h2>
           <div className="grid gap-8 md:grid-cols-3">
             <div className="p-8 bg-white rounded-lg shadow-md">
               <div className="inline-flex items-center justify-center w-16 h-16 mb-6 bg-primary/10 rounded-full">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary"><circle cx="12" cy="12" r="10"/><path d="m16 12-4-4-4 4"/><path d="m16 12-4 4-4-4"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
               </div>
-              <h3 className="mb-4 text-xl font-semibold">Easy Tracking</h3>
+              <h3 className="mb-4 text-xl font-semibold">Track Expenses</h3>
               <p className="text-muted-foreground">
-                Record expenses quickly and efficiently. Categorize transactions with a few clicks.
+                Easily record and categorize your daily expenses to keep track of where your money goes.
               </p>
             </div>
 
             <div className="p-8 bg-white rounded-lg shadow-md">
               <div className="inline-flex items-center justify-center w-16 h-16 mb-6 bg-primary/10 rounded-full">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
               </div>
-              <h3 className="mb-4 text-xl font-semibold">Smart Analytics</h3>
+              <h3 className="mb-4 text-xl font-semibold">Visualize Spending</h3>
               <p className="text-muted-foreground">
-                Visualize your spending with powerful filters and see exactly where your money goes.
+                Get clear insights into your spending habits with beautiful charts and graphs.
               </p>
             </div>
 
@@ -94,49 +86,6 @@ const LandingPage = () => {
           </Link>
         </div>
       </section>
-
-      {/* Footer */}
-      <footer className="py-12 bg-gray-900 text-gray-300">
-        <div className="container px-4 mx-auto">
-          <div className="flex flex-col md:flex-row justify-between">
-            <div className="mb-8 md:mb-0">
-              <h3 className="text-2xl font-bold text-white mb-4">ExpenseTracker</h3>
-              <p className="max-w-xs">
-                The most intuitive expense tracking solution for individuals and small businesses.
-              </p>
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-8">
-              <div>
-                <h4 className="mb-4 text-lg font-semibold text-white">Product</h4>
-                <ul className="space-y-2">
-                  <li><a href="#" className="hover:text-white">Features</a></li>
-                  <li><a href="#" className="hover:text-white">Pricing</a></li>
-                  <li><a href="#" className="hover:text-white">FAQ</a></li>
-                </ul>
-              </div>
-              <div>
-                <h4 className="mb-4 text-lg font-semibold text-white">Company</h4>
-                <ul className="space-y-2">
-                  <li><a href="#" className="hover:text-white">About</a></li>
-                  <li><a href="#" className="hover:text-white">Blog</a></li>
-                  <li><a href="#" className="hover:text-white">Contact</a></li>
-                </ul>
-              </div>
-              <div>
-                <h4 className="mb-4 text-lg font-semibold text-white">Legal</h4>
-                <ul className="space-y-2">
-                  <li><a href="#" className="hover:text-white">Privacy</a></li>
-                  <li><a href="#" className="hover:text-white">Terms</a></li>
-                  <li><a href="#" className="hover:text-white">Security</a></li>
-                </ul>
-              </div>
-            </div>
-          </div>
-          <div className="pt-8 mt-8 border-t border-gray-700 text-center md:text-left">
-            <p>&copy; 2025 ExpenseTracker. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 };
