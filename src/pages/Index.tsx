@@ -8,46 +8,14 @@ import ExpenseFiltersComponent from "@/components/ExpenseFilters";
 import { filterExpenses, calculateTotal } from "@/utils/expense-utils";
 import { PlusIcon } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
-
-// Sample initial data
-const initialExpenses: Expense[] = [
-  {
-    id: "1",
-    date: "2025-04-15",
-    description: "Grocery Shopping",
-    category: "Food",
-    amount: 85.43,
-  },
-  {
-    id: "2",
-    date: "2025-04-10",
-    description: "Movie Tickets",
-    category: "Entertainment",
-    amount: 24.99,
-  },
-  {
-    id: "3",
-    date: "2025-04-05",
-    description: "Electricity Bill",
-    category: "Utilities",
-    amount: 120.50,
-  },
-  {
-    id: "4",
-    date: "2025-04-02",
-    description: "Gasoline",
-    category: "Transportation",
-    amount: 45.75,
-  },
-];
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 const ExpenseTracker = () => {
   const { toast } = useToast();
-  const [expenses, setExpenses] = useState<Expense[]>(() => {
-    // Try to load expenses from local storage
-    const saved = localStorage.getItem("expenses");
-    return saved ? JSON.parse(saved) : initialExpenses;
-  });
+  const { user } = useAuth();
+  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   
   const [filteredExpenses, setFilteredExpenses] = useState<Expense[]>(expenses);
   const [total, setTotal] = useState<number>(calculateTotal(expenses));
@@ -67,10 +35,36 @@ const ExpenseTracker = () => {
     },
   });
 
-  // Save expenses to local storage whenever they change
+  // Fetch user's expenses on initial load
   useEffect(() => {
-    localStorage.setItem("expenses", JSON.stringify(expenses));
-  }, [expenses]);
+    const fetchExpenses = async () => {
+      if (!user) return;
+      
+      try {
+        setIsLoading(true);
+        const { data, error } = await supabase
+          .from('expenses')
+          .select('*')
+          .eq('user_id', user.id);
+          
+        if (error) throw error;
+        
+        if (data) {
+          setExpenses(data as Expense[]);
+        }
+      } catch (error: any) {
+        toast({
+          title: "Error fetching expenses",
+          description: error.message,
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchExpenses();
+  }, [user, toast]);
   
   // Apply filters whenever expenses or filters change
   useEffect(() => {
@@ -83,25 +77,65 @@ const ExpenseTracker = () => {
     setFilters(newFilters);
   }, []);
 
-  const handleSaveExpense = (expense: Expense) => {
-    if (expenseToEdit) {
-      // Edit existing expense
-      setExpenses((prev) =>
-        prev.map((e) => (e.id === expense.id ? expense : e))
-      );
+  const handleSaveExpense = async (expense: Expense) => {
+    if (!user) return;
+    
+    try {
+      if (expenseToEdit) {
+        // Edit existing expense
+        const { error } = await supabase
+          .from('expenses')
+          .update({
+            date: expense.date,
+            description: expense.description,
+            category: expense.category,
+            amount: expense.amount
+          })
+          .eq('id', expense.id);
+          
+        if (error) throw error;
+        
+        setExpenses((prev) =>
+          prev.map((e) => (e.id === expense.id ? expense : e))
+        );
+        
+        toast({
+          title: "Expense updated",
+          description: "The expense has been successfully updated.",
+        });
+      } else {
+        // Add new expense
+        const newExpense = {
+          ...expense,
+          user_id: user.id
+        };
+        
+        const { data, error } = await supabase
+          .from('expenses')
+          .insert([newExpense])
+          .select();
+          
+        if (error) throw error;
+        
+        if (data && data.length > 0) {
+          setExpenses((prev) => [...prev, data[0] as Expense]);
+        }
+        
+        toast({
+          title: "Expense added",
+          description: "The expense has been successfully added.",
+        });
+      }
+    } catch (error: any) {
       toast({
-        title: "Expense updated",
-        description: "The expense has been successfully updated.",
-      });
-    } else {
-      // Add new expense
-      setExpenses((prev) => [...prev, expense]);
-      toast({
-        title: "Expense added",
-        description: "The expense has been successfully added.",
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
       });
     }
+    
     setExpenseToEdit(undefined);
+    setIsAddingExpense(false);
   };
 
   const handleEditExpense = (expense: Expense) => {
@@ -109,12 +143,28 @@ const ExpenseTracker = () => {
     setIsAddingExpense(true);
   };
 
-  const handleDeleteExpense = (id: string) => {
-    setExpenses((prev) => prev.filter((e) => e.id !== id));
-    toast({
-      title: "Expense deleted",
-      description: "The expense has been successfully deleted.",
-    });
+  const handleDeleteExpense = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('expenses')
+        .delete()
+        .eq('id', id);
+        
+      if (error) throw error;
+      
+      setExpenses((prev) => prev.filter((e) => e.id !== id));
+      
+      toast({
+        title: "Expense deleted",
+        description: "The expense has been successfully deleted.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
   };
 
   const closeForm = () => {
@@ -139,6 +189,7 @@ const ExpenseTracker = () => {
         onEditExpense={handleEditExpense}
         onDeleteExpense={handleDeleteExpense}
         total={total}
+        isLoading={isLoading}
       />
 
       <ExpenseForm
