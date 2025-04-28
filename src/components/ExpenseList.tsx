@@ -23,19 +23,22 @@ import {
   AlertDialogCancel,
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface ExpenseListProps {
   expenses: Expense[];
   onEditExpense: (expense: Expense) => void;
   onDeleteExpense: (id: string) => void;
   total: number;
+  isLoading?: boolean; // Added isLoading prop
 }
 
 export default function ExpenseList({
   expenses,
   onEditExpense,
   onDeleteExpense,
-  total
+  total,
+  isLoading = false // Default to false
 }: ExpenseListProps) {
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
@@ -45,6 +48,40 @@ export default function ExpenseList({
       setDeleteId(null);
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Date</TableHead>
+              <TableHead>Description</TableHead>
+              <TableHead>Category</TableHead>
+              <TableHead className="text-right">Amount</TableHead>
+              <TableHead className="w-[100px]">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {[1, 2, 3].map(i => (
+              <TableRow key={i}>
+                <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                <TableCell className="text-right"><Skeleton className="h-4 w-16 ml-auto" /></TableCell>
+                <TableCell>
+                  <div className="flex justify-end space-x-2">
+                    <Skeleton className="h-8 w-8" />
+                    <Skeleton className="h-8 w-8" />
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+    );
+  }
 
   return (
     <>
