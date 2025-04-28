@@ -1,12 +1,12 @@
 
 import React, { useState } from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-import { supabase } from "@/integrations/supabase/client";
+import { Loader2 } from "lucide-react";
 
 const LoginPage = () => {
   const [username, setUsername] = useState("");
@@ -35,29 +35,24 @@ const LoginPage = () => {
     setIsLoading(true);
     
     try {
-      const { data, error } = await supabase
-        .from('users')
-        .select()
-        .eq('username', username)
-        .eq('password', password)
-        .single();
+      const { error } = await login(username, password);
       
-      if (error || !data) {
-        throw new Error("Invalid username or password");
+      if (error) {
+        toast({
+          title: "Login failed",
+          description: error.message || "Invalid credentials. Please try again.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Login successful",
+          description: "Welcome back!",
+        });
       }
-      
-      // Set user in auth context
-      login(data);
-      
-      toast({
-        title: "Login successful",
-        description: "Welcome back!",
-      });
-      
     } catch (error: any) {
       toast({
         title: "Login failed",
-        description: error.message || "Invalid credentials. Please try again.",
+        description: error.message || "An error occurred. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -66,54 +61,66 @@ const LoginPage = () => {
   };
   
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-indigo-100 to-purple-100">
-      <div className="w-full max-w-md p-8 space-y-8 bg-white rounded-lg shadow-lg">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold">Welcome Back</h1>
-          <p className="mt-2 text-gray-600">Sign in to access your expense tracker</p>
-        </div>
-        
-        <form className="mt-8 space-y-6" onSubmit={handleLogin}>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="username">Username</Label>
-              <Input
-                id="username"
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="Your username"
-                required
-              />
+    <div className="min-h-screen flex flex-col">
+      {/* Hero section with login form */}
+      <div className="flex-grow flex items-center justify-center bg-gradient-to-r from-indigo-500 to-purple-500">
+        <div className="w-full max-w-md p-8 space-y-8 bg-white rounded-xl shadow-xl">
+          <div className="text-center">
+            <h1 className="text-4xl font-extrabold text-gray-800">Welcome Back</h1>
+            <p className="mt-2 text-gray-600">Sign in to access your expense tracker</p>
+          </div>
+          
+          <form className="mt-8 space-y-6" onSubmit={handleLogin}>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="username">Username</Label>
+                <Input
+                  id="username"
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="Your username"
+                  className="text-base"
+                  required
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Your password"
+                  className="text-base"
+                  required
+                />
+              </div>
             </div>
             
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Your password"
-                required
-              />
+            <Button 
+              className="w-full text-base py-6" 
+              type="submit" 
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Signing in...
+                </>
+              ) : (
+                "Sign In"
+              )}
+            </Button>
+            
+            <div className="text-center text-sm">
+              <p className="text-gray-600">
+                Don't have an account? <Link to="#" className="text-primary font-medium">Register</Link>
+              </p>
             </div>
-          </div>
-          
-          <Button 
-            className="w-full" 
-            type="submit" 
-            disabled={isLoading}
-          >
-            {isLoading ? "Signing in..." : "Sign In"}
-          </Button>
-          
-          <div className="text-center text-sm">
-            <p className="text-gray-600">
-              Don't have an account? <a href="#" className="text-primary font-medium">Register</a>
-            </p>
-          </div>
-        </form>
+          </form>
+        </div>
       </div>
     </div>
   );
